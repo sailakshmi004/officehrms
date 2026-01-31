@@ -36,10 +36,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const taskId = parseInt(params.id);
+    const { id } = await params;
+    const taskId = parseInt(id);
     const body = await request.json();
 
     const updatedTask = await db
@@ -71,10 +72,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const taskId = parseInt(params.id);
+    const { id } = await params;
+    const taskId = parseInt(id);
 
     const deletedTask = await db
       .delete(tasks)
