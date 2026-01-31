@@ -34,3 +34,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+Use socket.io 
+
+1. command for next server : npm install next@latest
+2. drizzle installation : npm install drizzle-orm pg , npm install -D drizzle-kit
+3. .env file creation : notepad .env
+4. command to run migration - npx drizzle-kit migrate  
+Update db/schema.ts
+
+Run npx drizzle-kit generate
+
+Commit new migration
+
+Run npx drizzle-kit migrate
+
+#npm run build 
