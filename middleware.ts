@@ -1,54 +1,81 @@
-// middleware.ts
-import { NextRequest, NextResponse } from "next/server";
+// // middleware.ts
+// import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+// export function middleware(request: NextRequest) {
+//   const { pathname } = request.nextUrl;
 
-  // Public routes (no auth needed)
-  const publicPaths = [
-    "/login",
-    "/forgot-password",
-    "/reset-password",
-    "/api/auth",
-  ];
+//   // Public routes (no auth needed)
+//   const publicPaths = [
+//     "/login",
+//     "/forgot-password",
+//     "/reset-password",
+//     "/api/auth",
+//   ];
 
-  if (publicPaths.some((path) => pathname.startsWith(path))) {
+//   if (publicPaths.some((path) => pathname.startsWith(path))) {
+//     return NextResponse.next();
+//   }
+
+//   // Read auth cookie
+//   const token = request.cookies.get("auth_token")?.value;
+
+//   // If no token → redirect to login
+//   if (!token) {
+//     const loginUrl = new URL("/login", request.url);
+//     return NextResponse.redirect(loginUrl);
+//   }
+
+//   /**
+//    * OPTIONAL: Role-based protection
+//    * Example: only ADMIN & HR can access /dashboard/admin
+//    */
+//   if (pathname.startsWith("/dashboard/admin")) {
+//     const role = request.cookies.get("role")?.value;
+
+//     if (role !== "ADMIN" && role !== "HR") {
+//       return NextResponse.redirect(
+//         new URL("/unauthorized", request.url)
+//       );
+//     }
+//   }
+
+//   return NextResponse.next();
+// }
+
+// /**
+//  * IMPORTANT:
+//  * Matcher tells Next.js when to run middleware
+//  */
+// export const config = {
+//   matcher: [
+//     "/dashboard/:path*",
+//     "/api/:path*",
+//   ],
+// };
+
+// middleware.js
+import { NextResponse } from "next/server";
+
+export function middleware(request:any) {
+  const token = request.cookies.get("auth_token")?.value;
+
+  // Allow public routes
+  const publicPaths = ["/login", "/register"];
+
+  const pathname = request.nextUrl.pathname;
+  if (publicPaths.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Read auth cookie
-  const token = request.cookies.get("auth_token")?.value;
-
-  // If no token → redirect to login
+  // If not logged in → redirect to login
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  /**
-   * OPTIONAL: Role-based protection
-   * Example: only ADMIN & HR can access /dashboard/admin
-   */
-  if (pathname.startsWith("/dashboard/admin")) {
-    const role = request.cookies.get("role")?.value;
-
-    if (role !== "ADMIN" && role !== "HR") {
-      return NextResponse.redirect(
-        new URL("/unauthorized", request.url)
-      );
-    }
-  }
-
+  // User is authenticated
   return NextResponse.next();
 }
 
-/**
- * IMPORTANT:
- * Matcher tells Next.js when to run middleware
- */
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/api/:path*",
-  ],
+  matcher: ["/dashboard/:path*"],
 };
