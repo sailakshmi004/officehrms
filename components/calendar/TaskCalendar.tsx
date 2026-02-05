@@ -17,7 +17,7 @@ interface CalendarProps {
 }
 
 export function TaskCalendar({ tasks, onAddTask }: CalendarProps) {
-    const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1));
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     const getDaysInMonth = (date: Date) => {
         return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -56,23 +56,7 @@ export function TaskCalendar({ tasks, onAddTask }: CalendarProps) {
         date: Date;
     }> = [];
 
-    // Previous month days
-    const prevMonthDays = getDaysInMonth(
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
-    );
-    for (let i = firstDay - 1; i >= 0; i--) {
-        days.push({
-            day: prevMonthDays - i,
-            isCurrentMonth: false,
-            date: new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth() - 1,
-                prevMonthDays - i
-            ),
-        });
-    }
-
-    // Current month days
+    // Only current month days - no padding from previous or next months
     for (let i = 1; i <= daysInMonth; i++) {
         days.push({
             day: i,
@@ -81,21 +65,52 @@ export function TaskCalendar({ tasks, onAddTask }: CalendarProps) {
         });
     }
 
-    // Next month days
-    const remainingDays = 42 - days.length;
-    for (let i = 1; i <= remainingDays; i++) {
-        days.push({
-            day: i,
-            isCurrentMonth: false,
-            date: new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth() + 1,
-                i
-            ),
-        });
-    }
-
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    // Get yesterday, today, and tomorrow dates as strings
+    const getDateString = (offset: number) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const yesterdayStr = getDateString(-1);
+    const todayStr = getDateString(0);
+    const tomorrowStr = getDateString(1);
+
+    const isDateEnabled = (dateStr: string) => {
+        return dateStr === yesterdayStr || dateStr === todayStr || dateStr === tomorrowStr;
+    };
+
+    const getDateColorClasses = (dateStr: string) => {
+        if (dateStr === todayStr) {
+            return {
+                container: "bg-green-100 border-green-200 hover:border-green-400",
+                text: "text-green-700",
+                label: "text-green-700 font-bold"
+            };
+        } else if (dateStr === yesterdayStr) {
+            return {
+                container: "bg-blue-100 border-blue-200 hover:border-blue-300",
+                text: "text-blue-700",
+                label: "text-blue-700 font-semibold"
+            };
+        } else if (dateStr === tomorrowStr) {
+            return {
+                container: "bg-violet-100 border-violet-200 hover:border-violet-300",
+                text: "text-violet-700",
+                label: "text-violet-700 font-semibold"
+            };
+        }
+        return {
+            container: "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed",
+            text: "text-gray-400",
+            label: "text-gray-400"
+        };
+    };
 
     return (
         <div className="bg-white rounded-lg shadow p-8">
@@ -139,57 +154,34 @@ export function TaskCalendar({ tasks, onAddTask }: CalendarProps) {
             {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-4">
                 {days.map((dayObj, idx) => {
-                    const dateStr = dayObj.date.toISOString().split("T")[0];
+                    const year = dayObj.date.getFullYear();
+                    const month = String(dayObj.date.getMonth() + 1).padStart(2, '0');
+                    const day = String(dayObj.date.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
                     const dayTasks = tasks.filter((t) => t.taskDate === dateStr);
+                    const isEnabled = isDateEnabled(dateStr);
+                    const colors = getDateColorClasses(dateStr);
 
                     return (
                         <div
                             key={idx}
-                            className={`min-h-32 p-3 rounded-lg border-2 transition ${dayObj.isCurrentMonth
-                                ? "bg-white border-gray-200 hover:border-blue-300"
-                                : "bg-gray-50 border-gray-100 text-gray-400"
-                                }`}
+                            onClick={() => isEnabled && onAddTask(dateStr)}
+                            className={`min-h-32 p-3 rounded-lg border-2 transition ${colors.container} ${isEnabled ? "cursor-pointer" : ""}`}
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-900">
+                                    <span className={`font-semibold ${colors.label}`}>
                                         {dayObj.day}
                                     </span>
-                                    {dayTasks.length > 0 && (
-                                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-600 text-white text-xs font-bold">
-                                            {dayTasks.length}
-                                        </span>
-                                    )}
                                 </div>
-                                {dayObj.isCurrentMonth && (
-                                    <button
-                                        onClick={() => onAddTask(dateStr)}
-                                        className="text-blue-600 hover:bg-blue-50 p-1 rounded transition"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
-                                )}
                             </div>
 
                             {dayTasks.length > 0 ? (
-                                <div className="space-y-1">
-                                    {dayTasks.slice(0, 2).map((task) => (
-                                        <div
-                                            key={task.id}
-                                            className="text-xs bg-blue-50 text-blue-700 p-1 rounded truncate"
-                                        >
-                                            {task.description}
-                                        </div>
-                                    ))}
-                                    {dayTasks.length > 2 && (
-                                        <p className="text-xs text-gray-500">
-                                            {dayTasks.length - 2} more
-                                        </p>
-                                    )}
-                                </div>
+                                <p className={`text-xs ${colors.text}`}>{dayTasks.length} tasks</p>
                             ) : (
-                                <p className="text-xs text-gray-400">No tasks</p>
+                                <p className={`text-xs ${colors.text}`}>No tasks</p>
                             )}
+                                
                         </div>
                     );
                 })}
