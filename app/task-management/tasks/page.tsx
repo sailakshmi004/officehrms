@@ -5,6 +5,7 @@ import { Calendar, List } from "lucide-react";
 import { TaskCalendar } from "@/components/calendar/TaskCalendar";
 import { AddTaskModal } from "@/components/calendar/AddTaskModal";
 import { TaskStats } from "@/components/calendar/TaskStats";
+import { TaskListView } from "@/components/tables/TaskListView";
 
 interface Task {
     id: string;
@@ -144,6 +145,11 @@ export default function TaskManagement() {
                             <TaskCalendar tasks={tasks} onAddTask={handleAddTask} />
                         )}
                     </>
+                )}
+
+                {/* List View */}
+                {viewMode === "list" && (
+                    <TaskListView tasks={tasks} loading={loading} />
                 )}
             </div>
 

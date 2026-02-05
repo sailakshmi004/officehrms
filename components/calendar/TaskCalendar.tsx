@@ -181,7 +181,7 @@ export function TaskCalendar({ tasks, onAddTask }: CalendarProps) {
                             ) : (
                                 <p className={`text-xs ${colors.text}`}>No tasks</p>
                             )}
-                                
+
                         </div>
                     );
                 })}
